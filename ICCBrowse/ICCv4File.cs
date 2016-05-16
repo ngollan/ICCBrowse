@@ -80,7 +80,7 @@ namespace ICCBrowse {
         public static string ProfileSignature = "acsp";
 
         public ICCVersion Version { get; }
-        List<ICCTag> tags;
+        public List<ICCTagStub> TagStubs { get; }
         uint DataSize;
         string PreferredCMM;
         string ProfileClass;
@@ -88,6 +88,7 @@ namespace ICCBrowse {
         string PCS;
         DateTimeOffset CreatedDate;
         string HexProfileID;
+        uint TagCount;
 
         public ICCv4File(string fileName) {
             FileStream fs = File.Open(fileName, FileMode.Open, FileAccess.Read);
@@ -127,6 +128,30 @@ namespace ICCBrowse {
                 Debug.WriteLine($"Expected at least 128 bytes, got {n}");
             }
 
+            byte[] tagCountBuf = new byte[4];
+            n = fs.Read(tagCountBuf, 0, 4);
+
+            if (n != 4) {
+                throw new ArgumentException("Read terminated unexpectedly while reading tag table");
+            }
+
+            TagStubs = new List<ICCTagStub>();
+            var tagCount = ConsumeUInt32(tagCountBuf);
+
+            if (tagCount > 0) {
+                var tagTableSize = 12 * tagCount;
+                byte[] tagTable = new byte[tagTableSize];
+
+                n = fs.Read(tagTable, 0, (int)tagTableSize);
+                if (tagTableSize != n) {
+                    throw new ArgumentException("Read terminated unexpectedly while reading tag table");
+                }
+
+                for (var i = 0; i < tagCount; ++i) {
+                    TagStubs.Add(new ICCTagStub(new ArraySegment<byte>(tagTable, 12 * i, 12)));
+                }
+            }
+
             fs.Close();
         }
 
@@ -152,7 +177,7 @@ namespace ICCBrowse {
             }
         }
 
-        private uint ConsumeUInt32(IEnumerable<byte> _input) {
+        public static uint ConsumeUInt32(IEnumerable<byte> _input) {
             var input = _input.ToArray();
 
             if (BitConverter.IsLittleEndian) {
@@ -162,7 +187,7 @@ namespace ICCBrowse {
             return BitConverter.ToUInt32(input, 0);
         }
 
-        private int ConsumeUInt16(IEnumerable<byte> _input) {
+        public static int ConsumeUInt16(IEnumerable<byte> _input) {
             var input = _input.ToArray();
 
             if (BitConverter.IsLittleEndian) {
@@ -172,7 +197,7 @@ namespace ICCBrowse {
             return BitConverter.ToUInt16(input, 0);
         }
 
-        private DateTimeOffset ConsumeDateTimeNumber(IEnumerable<byte> _input) {
+        public static DateTimeOffset ConsumeDateTimeNumber(IEnumerable<byte> _input) {
             var input = _input.ToArray();
 
             var yy = ConsumeUInt16(new ArraySegment<byte>(input, 0, 2));

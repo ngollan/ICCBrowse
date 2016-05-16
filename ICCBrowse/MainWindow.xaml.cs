@@ -36,6 +36,10 @@ namespace ICCBrowse {
                 Debug.WriteLine($"Opening {open.FileName}");
                 var profile = new ICCv4File(open.FileName);
                 Debug.WriteLine(profile.ToString);
+
+                foreach(var stub in profile.TagStubs) {
+                    Debug.WriteLine($" * {stub.ToString}");
+                }
             }
         }
     }
