@@ -35,9 +35,6 @@ namespace ICCBrowse {
     }
 
     class ICCv4File {
-        public static HashSet<string> KnownProfileClasses { get; } = new HashSet<string> {
-          "scnr", "mntr", "prtr", "link", "spac", "abst", "nmcl"
-        };
 
         // Table 18 from ICCv4
         public static Dictionary<string, string> ProfileClasses = new Dictionary<string, string> {
@@ -79,6 +76,7 @@ namespace ICCBrowse {
             { "FCLR", "15 colour" }
         };
 
+        // ICCv4 Section 7.2.9
         public static string ProfileSignature = "acsp";
 
         public ICCVersion Version { get; }
@@ -108,7 +106,7 @@ namespace ICCBrowse {
 
                 ProfileClass = Encoding.ASCII.GetString(header, 12, 4);
 
-                if (!KnownProfileClasses.Contains(ProfileClass)) {
+                if (null == ProfileClasses[ProfileClass]) {
                     throw new ArgumentException($"Unknown profile class {ProfileClass}");
                 }
 
