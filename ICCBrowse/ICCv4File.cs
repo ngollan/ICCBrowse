@@ -7,7 +7,6 @@ using System.IO;
 using System.Diagnostics;
 
 namespace ICCBrowse {
-
     struct ICCVersion {
         public uint Major { get; }
         public uint Minor { get; }
@@ -38,6 +37,17 @@ namespace ICCBrowse {
     class ICCv4File {
         public static HashSet<string> KnownProfileClasses { get; } = new HashSet<string> {
           "scnr", "mntr", "prtr", "link", "spac", "abst", "nmcl"
+        };
+
+        // Table 18 from ICCv4
+        public static Dictionary<string, string> ProfileClasses = new Dictionary<string, string> {
+            { "scnr", "input device" },
+            { "mntr", "display device" },
+            { "prtr", "output device" },
+            { "link", "device link" },
+            { "spac", "colour space" },
+            { "abst", "abstract" },
+            { "nmcl", "named colour" }
         };
 
         // Table 19 from ICCv4
@@ -140,24 +150,7 @@ namespace ICCBrowse {
 
         public string ReadableProfileClass {
             get {
-                switch (ProfileClass) {
-                    case "scnr":
-                        return "input device";
-                    case "mntr":
-                        return "display device";
-                    case "prtr":
-                        return "output device";
-                    case "link":
-                        return "device link";
-                    case "spac":
-                        return "color space";
-                    case "abst":
-                        return "abstract";
-                    case "nmcl":
-                        return "named color";
-                    default:
-                        return $"unknown class \"{ProfileClass}\"";
-                }
+                return (ProfileClasses[ProfileClass] ?? $"unknown class \"{ProfileClass}\"");
             }
         }
 
