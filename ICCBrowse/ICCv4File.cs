@@ -7,6 +7,7 @@ using System.IO;
 using System.Diagnostics;
 
 namespace ICCBrowse {
+
     struct ICCVersion {
         public uint Major { get; }
         public uint Minor { get; }
